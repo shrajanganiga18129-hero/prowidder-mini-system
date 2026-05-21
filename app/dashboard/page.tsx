@@ -5,14 +5,32 @@ import { useEffect, useState } from "react";
 export default function DashboardPage() {
 
   const [providers, setProviders] = useState<any[]>([]);
+  const [loading, setLoading] = useState(true);
 
   async function fetchDashboard() {
 
-    const res = await fetch("/api/dashboard");
+    try {
 
-    const data = await res.json();
+      const res = await fetch("/api/dashboard");
 
-    setProviders(data);
+      const data = await res.json();
+
+      if (Array.isArray(data)) {
+        setProviders(data);
+      } else {
+        setProviders([]);
+      }
+
+    } catch (error) {
+
+      console.log(error);
+
+      setProviders([]);
+
+    } finally {
+
+      setLoading(false);
+    }
   }
 
   useEffect(() => {
@@ -27,89 +45,108 @@ export default function DashboardPage() {
 
   }, []);
 
+  if (loading) {
+
+    return (
+      <div className="p-6">
+        Loading dashboard...
+      </div>
+    );
+  }
+
   return (
+
     <div className="p-6">
 
       <h1 className="text-3xl font-bold mb-6">
         Provider Dashboard
       </h1>
 
-      <div className="grid gap-6">
+      {providers.length === 0 ? (
 
-        {providers.map((provider) => {
+        <p>No provider data found.</p>
 
-          const leadsCount =
-            provider.assignedLeads.length;
+      ) : (
 
-          const remainingQuota =
-            provider.monthlyQuota - leadsCount;
+        <div className="grid gap-6">
 
-          return (
+          {providers.map((provider) => {
 
-            <div
-              key={provider.id}
-              className="border p-4 rounded-lg"
-            >
+            const leadsCount =
+              provider.assignedLeads?.length || 0;
 
-              <h2 className="text-xl font-semibold mb-2">
-                {provider.name}
-              </h2>
+            const remainingQuota =
+              provider.monthlyQuota - leadsCount;
 
-              <p>
-                Leads Received: {leadsCount}
-              </p>
+            return (
 
-              <p>
-                Remaining Quota: {remainingQuota}
-              </p>
+              <div
+                key={provider.id}
+                className="border p-4 rounded-lg"
+              >
 
-              <div className="mt-4">
+                <h2 className="text-xl font-semibold mb-2">
+                  {provider.name}
+                </h2>
 
-                <h3 className="font-semibold mb-2">
-                  Assigned Leads
-                </h3>
+                <p>
+                  Leads Received: {leadsCount}
+                </p>
 
-                {provider.assignedLeads.length === 0 ? (
-                  <p>No leads assigned</p>
-                ) : (
+                <p>
+                  Remaining Quota: {remainingQuota}
+                </p>
 
-                  <div className="space-y-2">
+                <div className="mt-4">
 
-                    {provider.assignedLeads.map(
-                      (assignment:any) => (
+                  <h3 className="font-semibold mb-2">
+                    Assigned Leads
+                  </h3>
 
-                      <div
-                        key={assignment.id}
-                        className="border p-2 rounded"
-                      >
+                  {(provider.assignedLeads?.length || 0) === 0 ? (
 
-                        <p>
-                          Name: {assignment.lead.name}
-                        </p>
+                    <p>No leads assigned</p>
 
-                        <p>
-                          Phone: {assignment.lead.phone}
-                        </p>
+                  ) : (
 
-                        <p>
-                          City: {assignment.lead.city}
-                        </p>
+                    <div className="space-y-2">
 
-                        <p>
-                          Service ID:
-                          {" "}
-                          {assignment.lead.serviceId}
-                        </p>
+                      {provider.assignedLeads?.map(
+                        (assignment:any) => (
 
-                      </div>
-                    ))}
-                  </div>
-                )}
+                        <div
+                          key={assignment.id}
+                          className="border p-2 rounded"
+                        >
+
+                          <p>
+                            Name: {assignment.lead?.name}
+                          </p>
+
+                          <p>
+                            Phone: {assignment.lead?.phone}
+                          </p>
+
+                          <p>
+                            City: {assignment.lead?.city}
+                          </p>
+
+                          <p>
+                            Service ID:
+                            {" "}
+                            {assignment.lead?.serviceId}
+                          </p>
+
+                        </div>
+                      ))}
+                    </div>
+                  )}
+                </div>
               </div>
-            </div>
-          );
-        })}
-      </div>
+            );
+          })}
+        </div>
+      )}
     </div>
   );
 }
