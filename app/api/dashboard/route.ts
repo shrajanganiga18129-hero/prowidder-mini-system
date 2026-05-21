@@ -3,16 +3,30 @@ import { NextResponse } from "next/server";
 
 export async function GET() {
 
-  const providers =
-    await prisma.provider.findMany({
-      include: {
-        assignedLeads: {
-          include: {
-            lead: true
-          }
-        }
-      }
-    });
+  try {
 
-  return NextResponse.json(providers);
+    const providers =
+      await prisma.provider.findMany({
+        include: {
+          assignedLeads: {
+            include: {
+              lead: true,
+            },
+          },
+        },
+      });
+
+    return NextResponse.json(providers);
+
+  } catch (error) {
+
+    return NextResponse.json(
+      {
+        error: "Failed to fetch dashboard data",
+      },
+      {
+        status: 500,
+      }
+    );
+  }
 }
