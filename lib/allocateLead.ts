@@ -14,7 +14,7 @@ const mandatory: Record<number, number[]> = {
 
 export async function allocateLead(leadId:number, serviceId:number) {
 
-  return prisma.$transaction(async (tx) => {
+  return prisma.$transaction(async (tx: any) => {
 
     const assigned = new Set<number>();
 
